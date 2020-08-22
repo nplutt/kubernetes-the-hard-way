@@ -1,0 +1,39 @@
+{
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "instance_type": "{{user `instance_type`}}",
+      "ami_name": "{{user `name`}}-{{timestamp}}",
+      "ami_description": "{{user `ami_description`}}",
+      "source_ami": "{{ user `source_ami_id`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "encrypt_boot": true,
+      "tags": {
+        "BaseAMIName": "{{ .SourceAMIName }}",
+        "Name": "{{ user `name`}}",
+        "Namespace": "{{user `namespace`}}",
+        "Environment": "{{user `environment`}}",
+        "Owner": "{{user `owner`}}",
+        "Region": "{{user `region`}}"
+      },
+      "vpc_id": "{{user `vpc_id`}}",
+      "subnet_id": "{{user `subnet_id`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "../scripts/install_and_update.sh",
+        "../scripts/install_cloudwatch_agent.sh",
+        "../scripts/install_ssm_agent.sh"
+      ],
+      "environment_vars": [
+        "LOG_GROUP_PREFIX=kubernetes-cluster",
+        "REGION={{user `region`}}"
+      ]
+    }
+  ]
+}
